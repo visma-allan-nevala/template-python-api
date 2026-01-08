@@ -46,9 +46,8 @@ Example::
 """
 
 from functools import lru_cache
-from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -118,17 +117,22 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", description="API host")
     api_port: int = Field(default=8000, description="API port")
 
-    # Security
-    api_keys: list[str] = Field(default_factory=list, description="Valid API keys")
+    # Security - stored as comma-separated string
+    api_keys_str: str = Field(
+        default="",
+        description="Valid API keys (comma-separated)",
+        alias="API_KEYS",
+    )
     secret_key: str = Field(
         default="change-me-in-production",
         description="Secret key for signing",
     )
 
-    # CORS
-    cors_origins: list[str] = Field(
-        default_factory=lambda: ["http://localhost:3000"],
-        description="Allowed CORS origins",
+    # CORS - stored as comma-separated string
+    cors_origins_str: str = Field(
+        default="http://localhost:3000",
+        description="Allowed CORS origins (comma-separated)",
+        alias="CORS_ORIGINS",
     )
 
     # Logging
@@ -139,21 +143,19 @@ class Settings(BaseSettings):
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     redis: RedisSettings = Field(default_factory=RedisSettings)
 
-    @field_validator("api_keys", mode="before")
-    @classmethod
-    def parse_api_keys(cls, v: Any) -> list[str]:
-        """Parse comma-separated API keys."""
-        if isinstance(v, str):
-            return [k.strip() for k in v.split(",") if k.strip()]
-        return v or []
+    @property
+    def api_keys(self) -> list[str]:
+        """Get API keys as a list."""
+        if not self.api_keys_str:
+            return []
+        return [k.strip() for k in self.api_keys_str.split(",") if k.strip()]
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v: Any) -> list[str]:
-        """Parse comma-separated CORS origins."""
-        if isinstance(v, str):
-            return [o.strip() for o in v.split(",") if o.strip()]
-        return v or []
+    @property
+    def cors_origins(self) -> list[str]:
+        """Get CORS origins as a list."""
+        if not self.cors_origins_str:
+            return []
+        return [o.strip() for o in self.cors_origins_str.split(",") if o.strip()]
 
     @property
     def is_production(self) -> bool:

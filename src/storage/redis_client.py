@@ -52,6 +52,7 @@ from typing import Any
 # Install with: uv sync --extra redis
 try:
     from redis.asyncio import Redis, from_url
+
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -82,9 +83,7 @@ async def get_redis_client() -> Redis:
     global _redis_client
 
     if not REDIS_AVAILABLE:
-        raise ImportError(
-            "Redis package not installed. Install with: uv sync --extra redis"
-        )
+        raise ImportError("Redis package not installed. Install with: uv sync --extra redis")
 
     if _redis_client is None:
         _redis_client = await from_url(

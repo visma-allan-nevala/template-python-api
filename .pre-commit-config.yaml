@@ -43,7 +43,7 @@ repos:
           - pydantic-settings>=2.6.0
           - fastapi>=0.115.0
           - types-redis
-        args: [--config-file=pyproject.toml]
+        args: [--config-file=pyproject.toml, src]
         pass_filenames: false
         # Only run on src/ to avoid checking tests with strict mode
         files: ^src/

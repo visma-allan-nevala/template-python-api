@@ -127,9 +127,7 @@ class AuthorizationError(APIError):
     Raised when user lacks permission for the requested action.
     """
 
-    def __init__(
-        self, message: str = "Permission denied", resource: str | None = None
-    ) -> None:
+    def __init__(self, message: str = "Permission denied", resource: str | None = None) -> None:
         super().__init__(
             message=message,
             error_code="FORBIDDEN",

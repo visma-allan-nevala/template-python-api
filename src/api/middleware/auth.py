@@ -108,7 +108,7 @@ async def verify_bearer_token(
     if credentials is None:
         return None
 
-    token = credentials.credentials
+    _token = credentials.credentials
 
     # TODO: Implement JWT verification
     # if settings.jwt_enabled:

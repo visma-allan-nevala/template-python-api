@@ -97,9 +97,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         window_start = current_time - self.window_seconds
 
         # Clean old requests and count recent ones
-        _request_counts[client_id] = [
-            t for t in _request_counts[client_id] if t > window_start
-        ]
+        _request_counts[client_id] = [t for t in _request_counts[client_id] if t > window_start]
         request_count = len(_request_counts[client_id])
 
         # Calculate remaining requests and reset time
@@ -182,6 +180,7 @@ def rate_limit(requests: int = 10, window: int = 60) -> Callable[..., None]:
         ):
             return {"result": "..."}
     """
+
     async def _rate_limit_dependency(request: Request) -> None:
         client_ip = request.client.host if request.client else "unknown"
         key = f"route:{request.url.path}:{client_ip}"

@@ -19,8 +19,7 @@ Guidelines
 4. Group related constants together
 """
 
-from enum import Enum, auto
-
+from enum import Enum
 
 # =============================================================================
 # Pagination
