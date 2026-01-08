@@ -1,0 +1,2 @@
+# This file ensures the models directory is tracked by git.
+# Add your SQLAlchemy model files here (e.g., user.py, order.py).

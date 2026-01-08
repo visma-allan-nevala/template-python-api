@@ -1,0 +1,99 @@
+# =============================================================================
+# Application Settings
+# =============================================================================
+# This file contains application settings that can be loaded alongside
+# environment variables. Use for complex configuration that doesn't fit
+# well in environment variables.
+#
+# Note: Environment variables take precedence over this file.
+# =============================================================================
+
+# Application metadata
+app:
+  name: "my-api"
+  version: "0.1.0"
+  description: "A FastAPI application"
+
+# API configuration
+api:
+  # API version prefix
+  prefix: "/api/v1"
+
+  # Enable/disable OpenAPI documentation
+  docs:
+    enabled: true
+    title: "My API"
+    description: "API documentation"
+
+  # Pagination defaults
+  pagination:
+    default_page_size: 20
+    max_page_size: 100
+
+# Rate limiting configuration
+rate_limit:
+  enabled: false
+  requests_per_minute: 100
+  window_seconds: 60
+
+# Caching configuration
+cache:
+  enabled: true
+  default_ttl_seconds: 300
+  max_ttl_seconds: 3600
+
+# Health check configuration
+health:
+  # Include detailed checks in health endpoint
+  detailed: true
+
+  # Services to check
+  checks:
+    - database
+    - redis
+
+# Logging configuration (see also config/logging.yaml)
+logging:
+  level: "INFO"
+  format: "text"  # text or json
+
+# Feature flags (use for gradual rollouts)
+features:
+  # Example feature flags
+  # new_feature: false
+  # beta_endpoint: false
+
+# Environment-specific overrides
+# These are applied based on APP_ENV environment variable
+environments:
+  local:
+    api:
+      docs:
+        enabled: true
+    logging:
+      level: "DEBUG"
+
+  development:
+    api:
+      docs:
+        enabled: true
+    logging:
+      level: "DEBUG"
+
+  staging:
+    api:
+      docs:
+        enabled: true
+    logging:
+      level: "INFO"
+      format: "json"
+
+  production:
+    api:
+      docs:
+        enabled: false
+    logging:
+      level: "INFO"
+      format: "json"
+    rate_limit:
+      enabled: true

@@ -1,0 +1,106 @@
+# =============================================================================
+# Smoke Test Workflow
+# =============================================================================
+# Runs quick verification tests against deployed environments.
+# Can be triggered manually or after deployments.
+#
+# LLM Instructions:
+# - Configure API_BASE_URL for each environment
+# - Add API_KEY secret if authentication is required
+# - Extend smoke tests in tests/smoke/ as needed
+# - This workflow verifies deployments are healthy
+# =============================================================================
+
+name: Smoke Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+  # Optionally run after deployment workflow
+  workflow_run:
+    workflows: ["CD"]
+    types: [completed]
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  smoke-test:
+    name: Smoke Test - ${{ github.event.inputs.environment || 'development' }}
+    runs-on: ubuntu-latest
+
+    # Only run on successful deployment (if triggered by workflow_run)
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Set environment URL
+        id: env-url
+        run: |
+          ENV="${{ github.event.inputs.environment || 'development' }}"
+          case $ENV in
+            development)
+              echo "url=https://api-dev.example.com" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "url=https://api-staging.example.com" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "url=https://api.example.com" >> $GITHUB_OUTPUT
+              ;;
+          esac
+          echo "Testing environment: $ENV"
+
+      - name: Wait for deployment to be ready
+        run: |
+          echo "Waiting for deployment to be ready..."
+          sleep 30  # Adjust based on your deployment time
+
+      - name: Run health check
+        run: |
+          echo "Checking health endpoint..."
+          curl -sf "${{ steps.env-url.outputs.url }}/api/v1/health" || exit 1
+          echo "✅ Health check passed"
+
+      - name: Run smoke tests
+        env:
+          API_BASE_URL: ${{ steps.env-url.outputs.url }}
+          API_KEY: ${{ secrets.SMOKE_TEST_API_KEY }}
+        run: |
+          uv run pytest tests/smoke -v --tb=short
+
+      - name: Report status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Smoke tests passed for ${{ github.event.inputs.environment || 'development' }}"
+          else
+            echo "❌ Smoke tests failed for ${{ github.event.inputs.environment || 'development' }}"
+          fi

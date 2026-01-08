@@ -1,0 +1,112 @@
+# =============================================================================
+# Docker Compose Configuration
+# =============================================================================
+# Local development environment with API, PostgreSQL, and Redis
+#
+# Usage:
+#   Start all services:  docker-compose up -d
+#   Start specific:      docker-compose up -d postgres redis
+#   View logs:           docker-compose logs -f api
+#   Stop all:            docker-compose down
+#   Stop and cleanup:    docker-compose down -v
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # API Service
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ${APP_NAME:-my-api}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - APP_NAME=${APP_NAME:-my-api}
+      - APP_ENV=local
+      - DEBUG=true
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=${DATABASE_USER:-app_user}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-app_password}
+      - DATABASE_NAME=${DATABASE_NAME:-app_db}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./config:/app/config:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: ${APP_NAME:-my-api}-postgres
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-app_user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-app_password}
+      POSTGRES_DB: ${DATABASE_NAME:-app_db}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Uncomment to run init scripts on first startup
+      # - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-app_user} -d ${DATABASE_NAME:-app_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: ${APP_NAME:-my-api}-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  app-network:
+    driver: bridge
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local

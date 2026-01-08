@@ -1,0 +1,12 @@
+# Issue template configuration
+# https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests
+
+blank_issues_enabled: true
+
+contact_links:
+  - name: Documentation
+    url: https://github.com/your-org/my-api#readme
+    about: Check the documentation before opening an issue
+  - name: Discussions
+    url: https://github.com/your-org/my-api/discussions
+    about: Ask questions and discuss ideas

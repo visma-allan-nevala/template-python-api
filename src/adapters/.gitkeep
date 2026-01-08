@@ -1,0 +1,2 @@
+# Add adapter implementations here.
+# Each external service should have its own subpackage.

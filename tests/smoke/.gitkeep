@@ -1,0 +1,2 @@
+# Add smoke tests here for testing deployed environments.
+# Example: test_deployed_health.py

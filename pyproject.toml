@@ -1,0 +1,181 @@
+[project]
+name = "my-api"
+version = "0.1.0"
+description = "A FastAPI application template"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+]
+
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "httpx>=0.28.0",
+    "python-multipart>=0.0.17",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "httpx>=0.28.0",
+]
+
+# Database dependencies (uncomment as needed)
+db = [
+    "sqlalchemy>=2.0.0",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+]
+
+# Redis dependencies (uncomment as needed)
+redis = [
+    "redis>=5.2.0",
+]
+
+# All optional dependencies
+all = [
+    "my-api[dev,db,redis]",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/my-api"
+Documentation = "https://github.com/your-org/my-api#readme"
+Repository = "https://github.com/your-org/my-api"
+Issues = "https://github.com/your-org/my-api/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+# =============================================================================
+# Ruff Configuration
+# =============================================================================
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate (commented-out code)
+    "PL",     # pylint
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "PLR0913", # too many arguments
+    "PLR2004", # magic value comparison
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ARG",    # Unused arguments are common in fixtures
+    "PLR2004", # Magic values in tests are fine
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# =============================================================================
+# Mypy Configuration
+# =============================================================================
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_configs = true
+show_error_codes = true
+show_column_numbers = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = [
+    "uvicorn.*",
+    "asyncpg.*",
+    "redis.*",
+]
+ignore_missing_imports = true
+
+# =============================================================================
+# Pytest Configuration
+# =============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "smoke: Smoke tests for deployed environments",
+    "slow: Slow running tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
