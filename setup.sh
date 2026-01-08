@@ -81,7 +81,7 @@ if [[ ! -f uv.lock ]]; then
     success "Lock file generated"
 else
     info "Lock file already exists - running uv sync to ensure it's up to date"
-    uv sync
+    uv sync --extra dev
 fi
 
 # =============================================================================
